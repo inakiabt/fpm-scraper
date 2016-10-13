@@ -1,0 +1,10 @@
+{
+    "name": "root/serverside",
+    "authors": [
+        {
+            "name": "Iñaki Abete",
+            "email": "inakiabt@gmail.com"
+        }
+    ],
+    "require": {}
+}

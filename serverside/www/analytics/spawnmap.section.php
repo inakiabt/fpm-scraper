@@ -99,6 +99,55 @@ function initMap() {
 
     var cMarkerId = 0;
 
+    function GeolocationControl(controlDiv, map) {
+
+        // Set CSS for the control button
+        var controlUI = document.createElement('li');
+        controlDiv.appendChild(controlUI);
+
+        // Set CSS for the control text
+        var controlText = document.createElement('a');
+        controlText.href = '#'
+        controlText.onclick = geolocate
+        controlText.innerHTML = 'My Location'
+        controlUI.appendChild(controlText);
+    }
+
+    function geolocate() {
+
+        if (navigator.geolocation) {
+
+            navigator.geolocation.getCurrentPosition(function (position) {
+
+                var pinColor = "000000";
+                var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
+                    new google.maps.Size(21, 34),
+                    new google.maps.Point(0,0),
+                    new google.maps.Point(10, 34));
+                var pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+                    new google.maps.Size(40, 37),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(12, 35));
+                var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+                // Create a marker and center map on user location
+                marker = new google.maps.Marker({
+                    position: pos,
+                    draggable: false,
+                    animation: google.maps.Animation.DROP,
+                    icon: pinImage,
+                    shadow: pinShadow,
+                    map: map
+                });
+
+                map.setCenter(pos);
+                map.setZoom(17);
+            });
+        }
+
+        return false;
+    }
+
     function CustomMarker(latlng, map, args) {
         this.latlng = latlng;
         this.args = args;
@@ -180,6 +229,8 @@ function initMap() {
         zoom: 18,
         center: {lat: 0, lng: 0}
     });
+
+    new GeolocationControl(document.getElementById('nav-mobile'), map)
 
     map.addListener('click', function(evt) { originLocation.lat = evt.latLng.lat(); originLocation.lng = evt.latLng.lng(); });
 
