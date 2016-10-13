@@ -1,7 +1,7 @@
 <?php
     // All this analysis code is VERY very crude. Hacked up as quick as possible, so the quality is not that great.
 
-    $sql = "select * from pokemon_spawns where expiration > " . $minExpiration . " AND spawnpoint LIKE :pid order by expiration desc;";    
+    $sql = "select * from pokemon_spawns where expiration > " . $minExpiration . " AND spawnpoint LIKE :pid order by expiration desc;";
     $stmt = $GLOBALS['conn']->prepare($sql);
     $stmt->bindParam(':pid', $_GET['id']);
     $stmt->execute();
@@ -16,7 +16,7 @@
         $hour = date("G", $pkmn['expiration'] / 1000);
         $hours[$hour][] = $GLOBALS['rarity'][$pkmn['pokemonid']];
     }
-	
+
 	$commonSpawn = 0;
 	foreach($GLOBALS['rarity'] as $k => $v) {
 		if($v > $commonSpawn)
@@ -32,7 +32,7 @@
         if(count($hours[$k]) == 0)
             $hourRarity[$k] = Array('rarity' => 0, 'encounters' => 0);
         else
-            $hourRarity[$k] = Array('rarity' => 1 - (($total / count($hours[$k])) / $commonSpawn), 'encounters' => count($hours[$k])); 
+            $hourRarity[$k] = Array('rarity' => 1 - (($total / count($hours[$k])) / $commonSpawn), 'encounters' => count($hours[$k]));
     }
 
     function hourTo12($hr) {
@@ -42,7 +42,7 @@
             return $hr . "am";
         if($hr == 12)
             return $hr . "pm";
-        
+
         return ($hr - 12) . "pm";
     }
 
@@ -71,19 +71,19 @@
         </div>
     </div>
 
-    <div class="col s12">    
+    <div class="col s12">
         <h5 class="heading">Spawns @ '<?php echo $_GET['id']; ?>'</h5>
         <table class="striped">
             <tr>
                 <th>Pokemon</th>
                 <th>Encounter ID</th>
                 <th>Location</th>
-                <th>Expiration</th>                
+                <th>Expiration</th>
             </tr>
             <?php foreach($pokemonById as $pkmn) { $gpsstring = $pkmn['lat'] . "," .  $pkmn['lng']; ?>
                 <tr>
                     <td><a href="index.php?section=pokemon&amp;id=<?php echo $pkmn['pokemonid']; ?>"><?php echo $GLOBALS["pokemon"][$pkmn['pokemonid']]['name']; ?> (<?php echo round($GLOBALS['rarity'][$pkmn['pokemonid']] * 100, 2); ?>%)</a></td>
-                    <td><?php echo $pkmn['encounterid']; ?></td>                    
+                    <td><?php echo $pkmn['encounterid']; ?></td>
                     <td><a href="http://www.google.com/maps/place/<?php echo $gpsstring; ?>/@<?php echo $gpsstring; ?>,17z"><?php echo $pkmn['lat']; ?>, <?php echo $pkmn['lng']; ?></a></td>
                     <td><?php echo date("r", $pkmn['expiration'] / 1000); ?></td>
                 </tr>

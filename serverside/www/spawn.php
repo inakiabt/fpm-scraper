@@ -3,8 +3,12 @@
 
     if(!isset($_POST['spawns']))
         die("Bad request");
-        
-    $spawns = json_decode($_POST['spawns'], true);
+
+    $allspawns = json_decode($_POST['spawns'], true);
+    $spawns = array();
+    foreach($allspawns as $spawn) {
+        $spawns[$spawn['encounterId']] = $spawn;
+    }
 
     foreach($spawns as $spawn) {
         $sql = "
@@ -18,11 +22,12 @@
         $stmt->bindParam(':lat', $spawn['lat']);
         $stmt->bindParam(':lng', $spawn['lng']);
         $stmt->bindParam(':expiration', $spawn['expiration']);
-        $stmt->execute();
+        @$stmt->execute();
     }
 
-    
-    if(!isset($_POST['outname']) || empty(trim($_POST['outname']))) {
+    $outname = @trim($_POST['outname']);
+
+    if(!isset($_POST['outname']) || empty($outname)) {
 	    echo "OK";
 	    exit();
     }
@@ -47,7 +52,7 @@
                 <div class='col s8 pokerow'>
                     <span class='pokename'><?php echo $spawn['name']; ?></span><br />
                     <span>Expires: <?php echo date("g:ia", ($spawn['expiration'] / 1000)); ?></span><br />
-                    <span><?php echo $spawn['distance']; ?></span>
+                    <span><?php echo @$spawn['distance']; ?></span>
                 </div>
                 <div class='col s4 center-align'>
                     <a class='btn btn-small' style='position: relative; top: 20px' href='http://maps.google.com/maps?z=12&t=m&q=loc:<?php echo $spawn['lat'] . "," . $spawn['lng']; ?>'>MAP</a>
@@ -60,7 +65,7 @@
 </html>
 
 <?php
-    
+
     $nbout = ob_get_clean();
     ob_end_clean();
 

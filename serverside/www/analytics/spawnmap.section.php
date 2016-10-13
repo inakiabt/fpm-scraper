@@ -3,13 +3,13 @@
 
     global $minExpiration;
 
-    $sql = "select spawnpoint, lat, lng, expiration from pokemon_spawns where expiration > " . $minExpiration . " group by spawnpoint ORDER BY expiration DESC";    
+    $sql = "select spawnpoint, lat, lng, expiration from pokemon_spawns group by spawnpoint ORDER BY expiration DESC";
     $stmt = $GLOBALS['conn']->prepare($sql);
     $stmt->bindParam(':pid', $_GET['id']);
     $stmt->execute();
     $spawnpoints = $stmt->fetchAll();
 
-    echo "<script> var spawns = " . json_encode($spawnpoints) . ";</script>";    
+    echo "<script> var spawns = " . json_encode($spawnpoints) . ";</script>";
 ?>
 
     <style>
@@ -45,7 +45,7 @@
             <input type="checkbox" id="gpsjson" hecked="checked">
             <span class="lever"></span>
             </label>
-        </div> 
+        </div>
     </div>
 
     <div id="dist"></div>
@@ -58,27 +58,27 @@ Number.prototype.toRad = function() {
     return this * Math.PI / 180;
 }
 function distance(lat1, lon1, lat2, lon2) {
-    var R = 6371; // km 
+    var R = 6371; // km
     //has a problem with the .toRad() method below.
     var x1 = lat2-lat1;
-    var dLat = x1.toRad();  
+    var dLat = x1.toRad();
     var x2 = lon2-lon1;
-    var dLon = x2.toRad();  
-    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
-                    Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * 
-                    Math.sin(dLon/2) * Math.sin(dLon/2);  
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-    var d = R * c; 
+    var dLon = x2.toRad();
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c;
 
     return d * 1000;
 }
 
 function initMap() {
 
-    var maxDistance = 200;
+    var maxDistance = 20000;
 
     $(document).ready(function() {
-        $('#gpsjson').prop('checked', true);   
+        $('#gpsjson').prop('checked', true);
         $('#gpsjson').change(function() {
             var checked = $(this).is(":checked");
 
@@ -88,21 +88,21 @@ function initMap() {
             } else {
                 maxDistance = -1;
                 showPosition({
-                    coords: { 
+                    coords: {
                         latitude: 0,
                         longitude: 0
                     }
                 });
             }
-        });    
+        });
     });
 
     var cMarkerId = 0;
 
     function CustomMarker(latlng, map, args) {
-        this.latlng = latlng;	
-        this.args = args;	
-        this.setMap(map);	
+        this.latlng = latlng;
+        this.args = args;
+        this.setMap(map);
 
         cMarkerId++;
         this.markerId = cMarkerId;
@@ -111,17 +111,17 @@ function initMap() {
     CustomMarker.prototype = new google.maps.OverlayView();
 
     CustomMarker.prototype.draw = function() {
-        
+
         var self = this;
-        
+
         var div = this.div;
-        
+
         if (!div) {
-        
+
             div = this.div = document.createElement('div');
-            
+
             div.className = 'marker';
-            
+
             div.style.position = 'absolute';
             div.style.cursor = 'pointer';
             div.style.width = '40px';
@@ -133,21 +133,21 @@ function initMap() {
             div.style['color'] = "#FFF";
 
             div.id = "mrk-" + self.markerId;
-            
+
             if (typeof(self.args.marker_id) !== 'undefined') {
                 div.dataset.marker_id = self.args.marker_id;
             }
-            
-            google.maps.event.addDomListener(div, "click", function(event) {			
+
+            google.maps.event.addDomListener(div, "click", function(event) {
                 google.maps.event.trigger(self, "click");
             });
-            
+
             var panes = this.getPanes();
             panes.overlayImage.appendChild(div);
         }
-        
+
         var point = this.getProjection().fromLatLngToDivPixel(this.latlng);
-        
+
         if (point) {
             div.style.left = (point.x - 20) + 'px';
             div.style.top = (point.y + 3) + 'px';
@@ -158,17 +158,17 @@ function initMap() {
         if (this.div) {
             this.div.parentNode.removeChild(this.div);
             this.div = null;
-        }	
+        }
     };
 
     CustomMarker.prototype.getPosition = function() {
-        return this.latlng;	
+        return this.latlng;
     };
 
     console.log("initmap");
 
     var pLine;
-    var originLocation = {lat: 0, lng: 0};        
+    var originLocation = {lat: 0, lng: 0};
     var pLineData = [
         originLocation,
         originLocation
@@ -207,25 +207,26 @@ function initMap() {
                 var secs = (mt - (mins * 60));
 
                 var textClass = "red-text text-lighten-1";
-                if(mins < 20) textClass = "orange-text text-lighten-1"; 
-                if(mins < 15) textClass = "green-text text-lighten-1";                
+                if(mins < 20) textClass = "orange-text text-lighten-1";
+                if(mins < 15) textClass = "green-text text-lighten-1";
 
-                $("#mrk-" + sid).html("<span class='" + textClass + "'>" + mins + ":" + pad(secs, 2) + "</span>");                
+                $("#mrk-" + sid).html("<span class='" + textClass + "'>" + mins + ":" + pad(secs, 2) + "</span>");
             })(i);
-        }         
-    }, 1000);    
+        }
+    }, 1000);
 
     function getLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(showPosition);
         }
     }
-    
+
     var allMarkers = [];
     var allOverlays = [];
 
     function showPosition(position) {
         map.setCenter({lat: position.coords.latitude, lng: position.coords.longitude});
+        map.setZoom(15)
         cMarkerId = 0;
 
         for(var i = 0; i < allMarkers.length; i++) {
@@ -242,7 +243,7 @@ function initMap() {
         timeMarkers = {};
 
         for(var i in spawns) {
-            (function(sid) {    
+            (function(sid) {
 
                 var d = distance(position.coords.latitude, position.coords.longitude, parseFloat(spawns[sid]['lat']), parseFloat(spawns[sid]['lng']));
                 if(maxDistance != -1 && d > maxDistance)
@@ -257,7 +258,7 @@ function initMap() {
                 allMarkers.push(marker);
 
                 var overlay = new CustomMarker(
-                    new google.maps.LatLng(myLatLng.lat, myLatLng.lng), 
+                    new google.maps.LatLng(myLatLng.lat, myLatLng.lng),
                     map,
                     {
                         marker_id: '123',
@@ -267,7 +268,7 @@ function initMap() {
                 allOverlays.push(overlay);
 
                 var sd = new Date(parseInt(spawns[sid]['expiration'], 10));
-                timeMarkers[cMarkerId] = spawns[sid];                
+                timeMarkers[cMarkerId] = spawns[sid];
                 timeMarkers[cMarkerId].min = sd.getMinutes();
                 timeMarkers[cMarkerId].sec = sd.getSeconds();
 
@@ -287,7 +288,7 @@ function initMap() {
                         strokeColor: '#FF0000',
                         strokeOpacity: 1.0,
                         strokeWeight: 2
-                    });	
+                    });
 
                     pLine.setMap(map);
                     var d = distance(pLineData[0].lat, pLineData[0].lng, pLineData[1].lat, pLineData[1].lng);
@@ -296,26 +297,27 @@ function initMap() {
                     infowindow.open(map, marker);
                 });
             })(i);
-        }        
+        }
     }
 
     function getNearestMarkers() {
-        $.get("/gps.json", function(data) { 
+        $.get("/gps.json", function(data) {
             if(maxDistance != -1) {
                 showPosition({
-                    coords: { 
+                    coords: {
                         latitude: parseFloat(data.lat),
                         longitude: parseFloat(data.lng)
                     }
                 });
             }
-        }, "json"); 
+        }, "json");
     }
 
-    window.setInterval(getNearestMarkers, 60000);
-    window.setTimeout(getNearestMarkers, 3000);
+    getNearestMarkers();
+    // window.setInterval(getNearestMarkers, 60000);
+    // window.setTimeout(getNearestMarkers, 3000);
 }
     </script>
-	
+
     </div>
 </div>

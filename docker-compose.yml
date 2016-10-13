@@ -1,0 +1,12 @@
+version: '2'
+services:
+    mysql:
+        image: mysql:5.7
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=fpmscraper
+        ports:
+            - "3307:3306"
+        volumes:
+            - ./data/mysql:/var/lib/mysql
+            - ./data/conf:/etc/mysql/conf.d

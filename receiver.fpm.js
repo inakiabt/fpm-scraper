@@ -10,18 +10,18 @@ var fpmReceiver = function(config) {
     // Attempt the security authorize
     var prcSec = spawn('curl', [
         '--insecure',
-        'https://fastpokemap.se/sec?authorize=' + Math.random() + '.fpmSecretToken',  
+        'https://fastpokemap.se/sec?authorize=' + Math.random() + '.fpmSecretToken',
         '-H', "pragma: no-cache",
         '-H', "accept-encoding: gzip, deflate, sdch, br",
         '-H', "x-requested-with: XMLHttpRequest" ,
         '-H', "accept-language: en-US,en;q=0.8" ,
         '-H', "user-agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36",
-        '-H', "accept: */*", 
-        '-H', "cache-control: no-cache", 
-        '-H', "authority: fastpokemap.se", 
-        '-H', "referer: https://fastpokemap.se/", 
-        '--compressed'        
-    ]);    
+        '-H', "accept: */*",
+        '-H', "cache-control: no-cache",
+        '-H', "authority: fastpokemap.se",
+        '-H', "referer: https://fastpokemap.se/",
+        '--compressed'
+    ]);
 
     /**
      * Attempt a single spawn point fetch by hitting the fastpokemap API.
@@ -38,31 +38,31 @@ var fpmReceiver = function(config) {
 
         var prc = spawn('curl', [
             '--insecure',
-            url,  
-            '-H', 'pragma: no-cache',  
-            '-H', 'origin: https://fastpokemap.se', 
-            '-H', 'accept-encoding: gzip, deflate, sdch, br', 
-            '-H', 'accept-language: en-US,en;q=0.8', 
-            '-H', 'user-agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36', 
-            '-H', 'accept: application/json, text/javascript, */*; q=0.01', 
-            '-H', 'cache-control: no-cache', 
-            '-H', 'authority: api.fastpokemap.se', 
-            '--compressed',  
+            url,
+            '-H', 'pragma: no-cache',
+            '-H', 'origin: https://fastpokemap.se',
+            '-H', 'accept-encoding: gzip, deflate, sdch, br',
+            '-H', 'accept-language: en-US,en;q=0.8',
+            '-H', 'user-agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            '-H', 'accept: application/json, text/javascript, */*; q=0.01',
+            '-H', 'cache-control: no-cache',
+            '-H', 'authority: api.fastpokemap.se',
+            '--compressed',
             '-o', 'output.json'
         ]);
 
         prc.on('close', function (code) {
-            prc.stdout.resume(); 
+            prc.stdout.resume();
             var contents = "";
 
-            try {       
+            try {
                 contents = fs.readFileSync('output.json').toString();
             } catch(err) {
                 callback({ error: err });
                 return;
             }
 
-            try {                        
+            try {
                 callback(JSON.parse(contents));
             } catch(err) {
                 callback({ error: err, originalContents: contents });
@@ -80,7 +80,7 @@ var fpmReceiver = function(config) {
         if(tries > config.maxTries) {
             console.log("Took too long D:");
             error();
-        }        
+        }
 
         attemptFetch(lat, lng, function(contents) {
             if("error" in contents && contents.error === "overload") {
@@ -90,9 +90,9 @@ var fpmReceiver = function(config) {
                 console.log("Unexpected error!");
                 console.log(contents);
                 setTimeout(function() { fetch(lat, lng, callback, error, tries + 1); }, 0);
-            } else {                
+            } else {
                 callback(filterSpawns(contents.result), tries);
-            }            
+            }
         });
     }
 
@@ -120,7 +120,7 @@ var fpmReceiver = function(config) {
 
             result.push(filteredSpawn);
         }
-    
+
         return result;
     }
 
