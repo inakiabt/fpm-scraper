@@ -3,13 +3,15 @@
 
     global $minExpiration;
 
-    $sql = "select spawnpoint, lat, lng, expiration from pokemon_spawns group by spawnpoint ORDER BY expiration DESC";
+    $CITY = @$_GET['city'] ?: 'tandil';
+
+    $sql = "select spawnpoint, lat, lng, expiration from pokemon_spawns where city = :city group by spawnpoint ORDER BY expiration DESC";
     $stmt = $GLOBALS['conn']->prepare($sql);
-    $stmt->bindParam(':pid', $_GET['id']);
+    $stmt->bindParam(':city', $CITY);
     $stmt->execute();
     $spawnpoints = $stmt->fetchAll();
 
-    echo "<script> var spawns = " . json_encode($spawnpoints) . ";</script>";
+    echo "<script> var CITY = '" . htmlentities($CITY) . "'; var spawns = " . json_encode($spawnpoints) . ";</script>";
 ?>
 
     <style>
@@ -75,7 +77,7 @@ function distance(lat1, lon1, lat2, lon2) {
 
 function initMap() {
 
-    var maxDistance = 20000;
+    var maxDistance = 99999999999999;
 
     $(document).ready(function() {
         $('#gpsjson').prop('checked', true);
@@ -83,7 +85,7 @@ function initMap() {
             var checked = $(this).is(":checked");
 
             if(checked) {
-                maxDistance = 200;
+                maxDistance = 99999999999999;
                 getNearestMarkers();
             } else {
                 maxDistance = -1;
@@ -292,7 +294,6 @@ function initMap() {
         allMarkers = [];
         allOverlays = [];
         timeMarkers = {};
-
         for(var i in spawns) {
             (function(sid) {
 
@@ -352,7 +353,7 @@ function initMap() {
     }
 
     function getNearestMarkers() {
-        $.get("/gps.json", function(data) {
+        $.get("/gps-" + CITY + ".json", function(data) {
             if(maxDistance != -1) {
                 showPosition({
                     coords: {
